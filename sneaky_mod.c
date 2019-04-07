@@ -1,3 +1,5 @@
+
+
 #include <linux/module.h>      // for all modules 
 #include <linux/init.h>        // for entry/exit macros 
 #include <linux/kernel.h>      // for printk and other kernel bits 
@@ -9,10 +11,11 @@
 #include <asm/page.h>
 #include <asm/cacheflush.h>
 
+MODULE_LICENSE("GPL");
 
+/*
 
 #define BUFFLEN 512
-MODULE_LICENSE("GPL");
 
 
 //get sneaky process id
@@ -195,3 +198,6 @@ static void exit_sneaky_module(void)
 
 module_init(initialize_sneaky_module);  // what's called upon loading 
 module_exit(exit_sneaky_module);        // what's called upon unloading  
+
+
+*/

