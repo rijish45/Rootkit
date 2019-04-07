@@ -136,7 +136,6 @@ void copy_file(char * src,  char * destination){
 }
 
 
-
 void loop(){
 
   int char_eq;

