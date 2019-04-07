@@ -21,21 +21,14 @@ void unload_module(){
     exit(EXIT_FAILURE);
   }
   else if( unload_pid == 0){
-<<<<<<< HEAD
-  
-    char * argv[2] = {"sneaky_mod.ko", NULL};
-     if(execvp("rmmod", argv) < 0){
-=======
     
      char * argv[3] = {"rmmod","sneaky_mod.ko", NULL};
      int value = execvp("rmmod", argv);
      if(value == -1){
->>>>>>> 864b13bc5a26dc925aa24ec3dfb7c6df3a29cf8e
       perror( "execution error the module un-loading process");
       exit(EXIT_FAILURE);
     }
      printf("Removing module\n");
-     
   }
 
   else {
@@ -97,8 +90,6 @@ void load_module(){
   }
 
 }
-
-
 
 
 void copy_file(char * src,  char * destination){
