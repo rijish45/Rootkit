@@ -39,14 +39,15 @@ static unsigned long *sys_call_table = (unsigned long*)0xffffffff81e001a0;
 //The asmlinkage keyword is a GCC #define that indicates this function
 //should expect ti find its arguments on the stack (not in registers).
 //This is used for all system calls.
-asmlinkage int (*original_call)(const char *pathname, int flags);
+//asmlinkage int (*original_call)(const char *pathname, int flags);
 
 //Define our new sneaky version of the 'open' syscall
-asmlinkage int sneaky_sys_open(const char *pathname, int flags)
+/*asmlinkage int sneaky_sys_open(const char *pathname, int flags)
 {
   printk(KERN_INFO "Very, very Sneaky!\n");
   return original_call(pathname, flags);
 }
+*/
 
 
 //The code that gets executed when the module is loaded
