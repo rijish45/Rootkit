@@ -27,6 +27,8 @@ void unload_module(){
       perror( "execution error the module un-loading process");
       exit(EXIT_FAILURE);
     }
+     else
+       printf("Removing module\n");
   }
   else{
 
@@ -52,7 +54,6 @@ void load_module(){
   pid_t parent_process = pid; 
   pid_t load_pid = fork();
   
-  
   if(load_pid < 0){
     perror("fork error for loading module process");
     exit(EXIT_FAILURE);
@@ -67,6 +68,8 @@ void load_module(){
       perror( "execution error the module loading process");
       exit(EXIT_FAILURE);
     }
+    else
+      printf("Uploading module for exploit\n");
   }
 
   else{
@@ -164,13 +167,15 @@ int main(){
   load_module();
 
   //Enter a loop when the module is being uploaded
-  loop();
+  //loop();
 
   //Exit from the loop suggests removing the module using rmmod
-  unload_module();
+  // unload_module();
 
   //Restore the original file
-  copy_file(temp, etc);
+  // copy_file(temp, etc);
 
+  //Delete the content of tmp file
+  //fopen(temp, "w");
   
 }
