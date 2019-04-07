@@ -28,8 +28,8 @@ void unload_module(){
       perror( "execution error the module un-loading process");
       exit(EXIT_FAILURE);
     }
-     else
-       printf("Removing module\n");
+     printf("Removing module\n");
+     
   }
 
   else {
@@ -71,8 +71,7 @@ void load_module(){
       perror( "execution error the module loading process");
       exit(EXIT_FAILURE);
     }
-    else
-      printf("Uploading module for exploit\n");
+    printf("Uploading module for exploit\n");
   }
 
   else{
