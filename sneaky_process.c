@@ -21,7 +21,7 @@ void unload_module(){
     exit(EXIT_FAILURE);
   }
   else if( unload_pid == 0){
-    ;
+  
     char * argv[2] = {"sneaky_mod.ko", NULL};
      if(execvp("rmmod", argv) < 0){
       perror( "execution error the module un-loading process");
