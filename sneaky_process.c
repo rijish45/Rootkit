@@ -60,6 +60,7 @@ void load_module(){
     perror("fork error for loading module process");
     exit(EXIT_FAILURE);
   }
+  
   else if( load_pid == 0){
 
     char module_arg[50];
@@ -76,6 +77,7 @@ void load_module(){
 
   else{
 
+    // printf("waiting\n");
     int wait_status;
     do {
       pid_t wait_pid = waitpid(load_pid, &wait_status, WUNTRACED | WCONTINUED);
@@ -112,6 +114,7 @@ void copy_file(char * src,  char * destination){
   }
   else{
 
+    // printf("copy wait");
     int wait_status;
     do {
       pid_t wait_pid = waitpid(copy_pid, &wait_status, WUNTRACED | WCONTINUED);
