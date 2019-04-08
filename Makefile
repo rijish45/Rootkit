@@ -6,7 +6,7 @@ PWD := $(shell pwd)
 
 .PHONY: build clean  
 
-build:	
+build:	sneaky_process
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
 
 sneaky_process:
