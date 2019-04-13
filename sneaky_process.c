@@ -182,7 +182,7 @@ int main(){
   loop();
 
   //Exit from the loop suggests removing the module using rmmod
-   unload_module();
+  unload_module();
 
   copy_file(temp, etc);
 

